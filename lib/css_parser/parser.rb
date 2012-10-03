@@ -25,7 +25,7 @@ module CssParser
 
      # Array of CSS files that have been loaded.
     attr_reader   :loaded_uris
-    
+
     #--
     # Class variable? see http://www.oreillynet.com/ruby/blog/2007/01/nubygems_dont_use_class_variab_1.html
     #++
@@ -39,10 +39,10 @@ module CssParser
 
       # array of RuleSets
       @rules = []
-    
-      
+
+
       @loaded_uris = []
-    
+
       # unprocessed blocks of CSS
       @blocks = []
       reset!
@@ -118,7 +118,7 @@ module CssParser
       if options[:base_uri] and @options[:absolute_paths]
         block = CssParser.convert_uris(block, options[:base_uri])
       end
-      
+
       # Load @imported CSS
       block.scan(RE_AT_IMPORT_RULE).each do |import_rule|
         media_types = []
@@ -129,22 +129,22 @@ module CssParser
         else
           media_types = [:all]
         end
-        
+
         next unless options[:only_media_types].include?(:all) or media_types.length < 1 or (media_types & options[:only_media_types]).length > 0
 
         import_path = import_rule[0].to_s.gsub(/['"]*/, '').strip
-        
+
         if options[:base_uri]
           import_uri = Addressable::URI.parse(options[:base_uri].to_s) + Addressable::URI.parse(import_path)
           load_uri!(import_uri, options[:base_uri], media_types)
         elsif options[:base_dir]
           load_file!(import_path, options[:base_dir], media_types)
-        end     
+        end
       end
 
       # Remove @import declarations
       block.gsub!(RE_AT_IMPORT_RULE, '')
-      
+
       parse_block_into_rule_sets!(block, options)
     end
 
@@ -201,7 +201,7 @@ module CssParser
       end
       out
     end
-    
+
     # A hash of { :media_query => rule_sets }
     def rules_by_media_query
       rules_by_media = {}
@@ -213,7 +213,7 @@ module CssParser
           rules_by_media[mt] << block[:rules]
         end
       end
-      
+
       rules_by_media
     end
 
@@ -247,7 +247,7 @@ module CssParser
 
         if token =~ /\A"/ # found un-escaped double quote
           in_string = !in_string
-        end       
+        end
 
         if in_declarations > 0
           # too deep, malformed declaration block
@@ -255,17 +255,17 @@ module CssParser
             in_declarations -= 1 if token =~ /\}/
             next
           end
-          
+
           if token =~ /\{/
             in_declarations += 1
             next
           end
-        
+
           current_declarations += token
 
           if token =~ /\}/ and not in_string
             current_declarations.gsub!(/\}[\s]*$/, '')
-            
+
             in_declarations -= 1
 
             unless current_declarations.strip.empty?
@@ -319,7 +319,7 @@ module CssParser
         end
       end
 
-      # check for unclosed braces          
+      # check for unclosed braces
       if in_declarations > 0
         add_rule!(current_selectors, current_declarations, current_media_queries)
       end
@@ -344,7 +344,7 @@ module CssParser
         opts[:base_uri] = options if options.is_a? String
         opts[:media_types] = deprecated if deprecated
       end
-            
+
       if uri.scheme == 'file' or uri.scheme.nil?
         uri.path = File.expand_path(uri.path)
         uri.scheme = 'file'
@@ -357,7 +357,7 @@ module CssParser
         add_block!(src, opts)
       end
     end
-    
+
     # Load a local CSS file.
     def load_file!(file_name, base_dir = nil, media_types = :all)
       file_name = File.expand_path(file_name, base_dir)
@@ -369,18 +369,18 @@ module CssParser
 
       add_block!(src, {:media_types => media_types, :base_dir => base_dir})
     end
-    
+
     # Load a local CSS string.
     def load_string!(src, base_dir = nil, media_types = :all)
       add_block!(src, {:media_types => media_types, :base_dir => base_dir})
     end
-    
-    
+
+
 
   protected
     # Check that a path hasn't been loaded already
     #
-    # Raises a CircularReferenceError exception if io_exceptions are on, 
+    # Raises a CircularReferenceError exception if io_exceptions are on,
     # otherwise returns true/false.
     def circular_reference_check(path)
       path = path.to_s
@@ -392,7 +392,7 @@ module CssParser
         return true
       end
     end
-  
+
     # Strip comments and clean up blank lines from a block of CSS.
     #
     # Returns a string.
@@ -400,7 +400,7 @@ module CssParser
       # Strip CSS comments
       block.gsub!(STRIP_CSS_COMMENTS_RX, '')
 
-      # Strip HTML comments - they shouldn't really be in here but 
+      # Strip HTML comments - they shouldn't really be in here but
       # some people are just crazy...
       block.gsub!(STRIP_HTML_COMMENTS_RX, '')
 
@@ -417,12 +417,12 @@ module CssParser
     # TODO: add option to fail silently or throw and exception on a 404
     #++
     def read_remote_file(uri) # :nodoc:
-      return nil, nil unless circular_reference_check(uri.to_s)    
+      return nil, nil unless circular_reference_check(uri.to_s)
 
       src = '', charset = nil
 
       begin
-        uri = Addressable::URI.parse(uri.to_s)          
+        uri = Addressable::URI.parse(uri.to_s)
 
         if uri.scheme == 'file'
           # local file
@@ -434,7 +434,7 @@ module CssParser
           if uri.scheme == 'https'
             uri.port = 443 unless uri.port
             http = Net::HTTP.new(uri.host, uri.port)
-            http.use_ssl = true 
+            http.use_ssl = true
             http.verify_mode = OpenSSL::SSL::VERIFY_NONE
           else
             http = Net::HTTP.new(uri.host, uri.port)
@@ -472,7 +472,7 @@ module CssParser
         return nil, nil
       end
 
-      return src, charset  
+      return src, charset
     end
 
   private
