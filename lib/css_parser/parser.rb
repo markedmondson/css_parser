@@ -276,6 +276,7 @@ module CssParser
             current_declarations = ''
           end
         elsif token =~ /@media/i
+          next # Leave @media queries in the head
           # found '@media', reset current media_types
           in_at_media_rule = true
           current_media_queries = []
